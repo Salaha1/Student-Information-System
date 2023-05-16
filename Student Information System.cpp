@@ -421,21 +421,6 @@ void Register(student* s, int& NbofStudents) {
 
 }
 
-//void SaveInfoToFile(student* s, int& NbofStd, string filename) {
-//
-//	fstream file(filename, ios::in | ios::out | ios::app);
-//	string line;
-//
-//	if (!file.is_open()) {
-//		cout << "Error opening file!" << endl;
-//		return;
-//	}
-//
-//	for (int i = 0; i < NbofStd; i++) {
-//		file << s[i].studentID << ',' << MD5(s[i].password).hexdigest() << ',' << s[i].firstName << ',' << s[i].lastName << ',' <<
-//			s[i].email << ',' << s[i].phone << endl;
-//	}
-//}
 
 void SignIn(student* s, int& NbofStd, string& SID) {
 
@@ -543,6 +528,7 @@ void LoadCourses(course*& c, int& NbOfCourses) {
 			// Check if line is empty or consists only of whitespace
 			if (line.find_first_not_of(' ') == string::npos)
 				continue;
+			
 
 			getline(ss, c[lineCount].courseID, ',');
 			ss >> c[lineCount].classNumber;
@@ -571,6 +557,46 @@ void LoadCourses(course*& c, int& NbOfCourses) {
 
 	nbOfCourses.close();
 }
+
+//void LoadRegCourse(course*& regCourses, int& numOfRegCourses) {
+//	ifstream regCourseFile("RegisteredCourses.csv");
+//
+//	if (!regCourseFile) {
+//		cerr << "Error opening RegisteredCourses.csv" << endl;
+//		return;
+//	}
+//
+//	string line;
+//	numOfRegCourses = 0;
+//
+//	// Count the number of valid lines in the file
+//	while (getline(regCourseFile, line)) {
+//		// Check if line is empty or consists only of whitespace
+//		if (line.find_first_not_of(' ') != string::npos) {
+//			++numOfRegCourses;
+//		}
+//	}
+//
+//	// Allocate memory for the regCourses array
+//	regCourses = new course[numOfRegCourses];
+//
+//	// Reset file stream to the beginning
+//	regCourseFile.clear();
+//	regCourseFile.seekg(0, ios::beg);
+//
+//	int lineCount = 0;
+//
+//	// Read the first 6 characters from each line and store them in the classNumber field
+//	while (getline(regCourseFile, line)) {
+//		if (line.find_first_not_of(' ') != string::npos) {
+//			string classNumString = line.substr(0, 6);
+//			regCourses[lineCount].classNumber = stoi(classNumString);
+//			++lineCount;
+//		}
+//	}
+//
+//	regCourseFile.close();
+//}
 
 void AddCourse(course* c, int& NbofCourses) {
 
@@ -605,15 +631,6 @@ void AddCourse(course* c, int& NbofCourses) {
 	}
 	cout << "----------------------------------------------------------------------------------------" << endl;
 
-	/*while (file) {
-		getline(file, courseID, ',');
-		file >> classNumber;
-
-		if (courseID == newCourse.courseID && classNumber == newCourse.classNumber) {
-			cout << endl << "  COURSE ALREADY EXISTS!";
-			exit(0);
-		}
-	}*/
 
 	cout << "Enter the name of the course : ";
 	cin.ignore();
@@ -682,7 +699,7 @@ void RemoveCourse(course* c, int& NbofCourses) {
 
 	fstream file("Courses.csv", ios::in | ios::out | ios::app);
 	string courseID, courseName, courseCredits, prerequiste, day, startTime, endTime;
-	int classNumber, capacity, removeClassNumber;
+	int classNumber = 0, capacity = 0, removeClassNumber = 0;
 	course* allCourses = new course[NbofCourses];
 	//course* allcourses;
 
@@ -700,7 +717,7 @@ void RemoveCourse(course* c, int& NbofCourses) {
 		getline(file, line, '\n');
 		cout << line << endl << endl;
 	}
-
+	LoadCourses(allCourses, NbofCourses);
 	cout << "----------------------------------------------------------------------------------------" << endl;
 	cout << "Enter the number of the class you want to remove: ";
 	cin >> removeClassNumber;
@@ -801,11 +818,7 @@ int GetNbofCourses() {
 }
 
 void RegCoursesToFile(int classnumber, string filename, string SID) {
-	// hayde l function badna nzabeta la bas na3mela call tfout tnabesh aal class number li eza mesh mawjoud bel file RegisteredCourse
-	// lezem yaamel append bel ekher w bas tle2i bt fout bel line bt hot id l student li eemel sign in aa nafs l line l
-	//  parameters rah ykouno esem l file li houwe RegisteredCourse w l NbofCourses li houwe kel
-	// l courses l mawjoudin bel Courses file w l array of structure li fiye l courses kelon la nekhod mennon l class numbers w
-	// w kamen l Student ID la ne2dar nhotto bel file bas nle2ilo mahhal
+	
 	fstream file(filename, ios::in | ios::out | ios::app);
 
 
@@ -889,10 +902,7 @@ void GetCoursesFromRegFile(string filename, string SID) { // this function will 
 		cout << "Unable to open the file." << endl;
 	}
 }
-void EnrollCourse(course SelectedCourse, int nbOfCourses) {
-	// lezem nzid hon eno validation la eza l user ekhed shi  course gher l course l aam yaamelo enroll bi nafs l waet !
 
-}
 
 bool SearchforClassNumInRCourse(int classnum, string filename, string& foundline) {
 	fstream file(filename, ios::in | ios::out | ios::app);
@@ -900,7 +910,7 @@ bool SearchforClassNumInRCourse(int classnum, string filename, string& foundline
 	if (file.is_open()) {
 		while (getline(file, line)) {
 			size_t found = line.find(classnum);
-			if (found != std::string::npos) {
+			if (found != string::npos) {
 				// Class number found in the line
 				return true;
 				foundline = line;
@@ -961,7 +971,32 @@ void removeStudentID(const string& filePath, const int& classNumber, const strin
 		cout << "Unable to open the file." << endl;
 	}
 }
+void searchStudentByID(const std::string& studentID) {
+	std::ifstream file("RegisteredCourse.csv");
 
+	if (!file) {
+		std::cerr << "Error opening RegisteredCourse.csv" << std::endl;
+		return;
+	}
+
+	std::string line;
+	while (std::getline(file, line)) {
+		// Split the line by comma
+		size_t pos = line.find(',');
+		if (pos != std::string::npos) {
+			std::string currentID = line.substr(0, pos);
+			if (currentID == studentID) {
+				std::cout << line << std::endl;
+				file.close();
+				return;
+			}
+		}
+	}
+
+	std::cout << "Student ID not found." << std::endl;
+
+	file.close();
+}
 void ArrToFile(course*& c, int& NbofCourses) {
 	ofstream file("Courses.csv", ios::out);
 
@@ -975,6 +1010,107 @@ void ArrToFile(course*& c, int& NbofCourses) {
 			c[i].prerequiste << ',' << c[i].capacity << ',' << c[i].d.day << ',' << c[i].d.startTime << ',' << c[i].d.endTime << endl;
 	}
 }
+
+void EnrollCourse(course*& c,course& SelectedCourse, int& nbOfCourses,int course_index,string addchoice1,string SID){
+ClearScreen();
+fstream file("Courses.csv", ios::in | ios::out | ios::app);
+string line;
+cout << "Choose One Of The Following Courses To Enroll By Entering It's Class Number: " << endl;
+
+system("pause");
+while (file) {
+	getline(file, line, '\n');
+	cout << line << endl << endl;
+}
+do {
+	cin >> SelectedCourse.classNumber;
+	for (int i = 0; i < nbOfCourses; i++) {
+		if (c[i].classNumber == SelectedCourse.classNumber && c[i].capacity > 0) {
+			course_index = i;
+		}
+
+
+	}
+
+	if (course_index != -1) {
+		cout << "Are You Sure You Want To Enroll " << endl << c[course_index].courseID
+			<< " Course In The Following Date: " << c[course_index].d.day << '\t' << c[course_index].d.startTime << '\t' << c[course_index].d.endTime;
+		cout << endl << "(Yes / No)";
+		cin >> addchoice1;
+		if (addchoice1 == "Yes" || addchoice1 == "yes")
+			cout << "Course Added Successfully !" << endl;
+		system("pause");
+		c[course_index].capacity--;
+		ArrToFile(c, nbOfCourses);
+		// hon lezem baad hon validation lal prerequiste w lal day wel time
+		int classnumber = c[course_index].classNumber;
+		RegCoursesToFile(classnumber, "RegisteredCourse.csv", SID);
+		if (addchoice1 == "No" || addchoice1 == "no")
+			cout << "Enrollement Failed.";
+		break;
+	}
+	else {
+		cout << "Course not Available Please Select Another One: ";
+	}
+
+} while (course_index == -1);
+}
+
+void DropCourse(course SelectedCourse,string SID, string foundline,int& nbOfCourses,course*& c, int course_index,string addchoice1) {
+	ClearScreen();
+
+	cout << "Choose One Of The Following Courses To Drop By Entering It's Class Number: " << endl;
+
+	GetCoursesFromRegFile("RegisteredCourse.csv", SID);
+
+	bool ClassNumFound = false;
+
+	do
+	{
+		cin >> SelectedCourse.classNumber;
+		ClassNumFound = SearchforClassNumInRCourse(SelectedCourse.classNumber, "RegisteredCourse.csv", foundline);
+		ClassNumFound = true;
+		if (ClassNumFound)
+		{
+
+			for (int i = 0; i < nbOfCourses; i++)
+			{
+				if (SelectedCourse.classNumber == c[i].classNumber)
+				{
+					SelectedCourse = c[i];
+					course_index = i;
+				}
+			}
+			cout << "Are You Sure You Want To Drop This Course: " << SelectedCourse.courseName;
+			cout << endl << "(Yes / No)";
+			cin >> addchoice1;
+			if (addchoice1 == "Yes" || addchoice1 == "yes")
+			{
+				cout << "Course Dropped Successfully !";
+				c[course_index].capacity++;
+				ArrToFile(c, nbOfCourses);
+				const int Classnum = SelectedCourse.classNumber;
+				removeStudentID("RegisteredCourse.csv", Classnum, SID);
+
+			}
+			else if (addchoice1 == "No" || addchoice1 == "no")
+			{
+				cout << "Enrollement Failed.";
+
+				ClassNumFound = false;
+			}
+			else {
+				cout << "Course not found";
+				system("pause");
+			}
+
+		}
+		else {
+			cout << "You Aren't Registered In That Course. Please Select Another One: ";
+		}
+
+	} while (!ClassNumFound);
+}
 //Admin Or Student
 void Student(course*& c, int& nbOfCourses, string SID) {
 
@@ -985,8 +1121,10 @@ void Student(course*& c, int& nbOfCourses, string SID) {
 	course SelectedCourse;
 	int course_index = -1;
 	string foundline = "";
-	course SelectedCourseDt;
-
+	int swapchoice2;
+	int course_index_2 = -1;
+	course* SelectedSwapCourse = new course[nbOfCourses];
+	int course_index_3 = -1;
 
 	do {
 		ClearScreen();
@@ -1007,133 +1145,37 @@ void Student(course*& c, int& nbOfCourses, string SID) {
 		cout << "----------------------------------------------------------------------------------------" << endl << endl;
 		cin >> choice;
 		if (choice == 1) {
-			ClearScreen();
-
-			cout << "Choose One Of The Following Courses To Enroll By Entering It's Class Number: " << endl;
-
-			system("pause");
-			while (file) {
-				getline(file, line, '\n');
-				cout << line << endl << endl;
-			}
-			do {
-				cin >> SelectedCourse.classNumber;
-				for (int i = 0; i < nbOfCourses; i++) {
-					if (c[i].classNumber == SelectedCourse.classNumber && c[i].capacity > 0) {
-						course_index = i;
-					}
-
-
-				}
-
-				if (course_index != -1) {
-					cout << "Are You Sure You Want To Enroll " << endl << c[course_index].courseID
-						<< " Course In The Following Date: " << c[course_index].d.day << '\t' << c[course_index].d.startTime << '\t' << c[course_index].d.endTime;
-					cout << endl << "(Yes / No)";
-					cin >> addchoice1;
-					if (addchoice1 == "Yes" || addchoice1 == "yes")
-						cout << "Course Added Successfully !" << endl;
-					system("pause");
-					c[course_index].capacity--;
-					ArrToFile(c, nbOfCourses);
-					// hon lezem baad hon validation lal prerequiste w lal day wel time
-					int classnumber = c[course_index].classNumber;
-					RegCoursesToFile(classnumber, "RegisteredCourse.csv", SID);
-					if (addchoice1 == "No" || addchoice1 == "no")
-						cout << "Enrollement Failed.";
-					break;
-				}
-				else {
-					cout << "Course not Available Please Select Another One: ";
-				}
-
-			} while (course_index == -1);
+			EnrollCourse(c, SelectedCourse, nbOfCourses, course_index, addchoice1, SID);
 		}
 		else if (choice == 2)
 		{
-			ClearScreen();
 
-			cout << "Choose One Of The Following Courses To Drop By Entering It's Class Number: " << endl;
-
-			GetCoursesFromRegFile("RegisteredCourse.csv", SID);
-
-			bool ClassNumFound = false;
-
-			do
-			{
-				cin >> SelectedCourse.classNumber;
-				ClassNumFound = SearchforClassNumInRCourse(SelectedCourse.classNumber, "RegisteredCourse.csv", foundline);
-				ClassNumFound = true;
-				if (ClassNumFound)
-				{
-
-					for (int i = 0; i < nbOfCourses; i++)
-					{
-						if (SelectedCourse.classNumber == c[i].classNumber)
-						{
-							SelectedCourse = c[i];
-							course_index = i;
-						}
-					}
-					cout << "Are You Sure You Want To Drop This Course: " << SelectedCourse.courseName;
-					cout << endl << "(Yes / No)";
-					cin >> addchoice1;
-					if (addchoice1 == "Yes" || addchoice1 == "yes")
-					{
-						cout << "Course Dropped Successfully !";
-						c[course_index].capacity++;
-						ArrToFile(c, nbOfCourses);
-						const int Classnum = SelectedCourse.classNumber;
-						removeStudentID("RegisteredCourse.csv", Classnum, SID);
-
-					}
-					else if (addchoice1 == "No" || addchoice1 == "no")
-					{
-						cout << "Enrollement Failed.";
-
-						ClassNumFound = false;
-					}
-					else {
-						cout << "Course not found";
-						system("pause");
-					}
-
-				}
-				else {
-					cout << "You Aren't Registered In That Course. Please Select Another One: ";
-				}
-
-			} while (!ClassNumFound);
+			DropCourse(SelectedCourse,SID, foundline,nbOfCourses, c,course_index,addchoice1);
 
 
 		}
-		else if (choice == 3) {
+		else if (choice == 3)
+		{
 			ClearScreen();
 
-			cout << "-------------------------------------------------------------------------------------------------";
-			cout << endl << "Here's Your Enrolled Courses: " << endl;
-			GetCoursesFromRegFile("RegisteredCourse.csv", SID);
+			cout << "-------------------------------------------------------------------------------------------------" << endl;
 			cout << "-------------------------------------------------------------------------------------------------" << endl;
 
-			bool ClassNumFound = SearchforClassNumInRCourse(SelectedCourse.classNumber, "RegisteredCourse.csv", foundline);
 
+			cout << endl << "Here's Your Enrolled Courses: " << endl;
+			GetCoursesFromRegFile("RegisteredCourse.csv", SID); // this function will display courses that the user is already enrolled in
+			cout << "-------------------------------------------------------------------------------------------------" << endl;
+
+
+
+
+			bool ClassNumFound = SearchforClassNumInRCourse(SelectedCourse.classNumber, "RegisteredCourse.csv", foundline);
+			ClassNumFound = true;
 			do
 			{
+
 				cout << "Choose The Course That You Want To Swap By Entering It's Class Number: " << endl;
 				cin >> SelectedCourse.classNumber;
-				cout << "Here's The Available Courses To Enroll: " << endl;
-				// fina nfout bi for loop tkoun btetdamman eza l SelectedCourse.classNumber = la c[i].classNumber 
-				// kel li badna ye hon houwe eno bas yfawet l user awal class number li bado yaamelo swap maa wahad tene
-				// lezem nnabesh aal class number eza mawjoud had esmo bel RegisteredCourse eza mawjoud bt red true w mn kamel
-				// baaden mn fout bi loop men nabbesh aal class number li l2ine bel Registered bel Courses file bas yle2i
-				// bel for loop byaate l information tabaa l course lal Structure SelectedCourse bas naatiya lal selected course
-				// sar aana kel l infos tabaa l course li badna naamelo swap maa course tene la ne2dar naarf l options li 
-				// fina naaml maaa swap badna nekhod l Class ID tabaa lSelectedCourse w nnabesh aa be2e l courses bi Courses file
-				// kel li aandon nafs l ClassID metl SelectedCourse naamelon Store bi Array Of structure esma AvailableCourses
-				// w mnerjaa mnaamela cout lal array of structure bas mnaaml cout lal names w l Class numbers tabaa l courses
-				// w baaden mn elo yna2e course mnaamelo validation eza mawjoud bi hayde l array eza mawjoud are you sure you
-				// want to swap eza el yes badna naamel drop lal course li na2e bel awal w enroll la course l tene
-				// hon badna naaml cout lal courses li aandon nafs l ClassID tabaa l class number li fawato bel awal l user
 				cout << "-------------------------------------------------------------------------------------------------" << endl;
 
 				if (ClassNumFound)
@@ -1143,24 +1185,67 @@ void Student(course*& c, int& nbOfCourses, string SID) {
 					{
 						if (SelectedCourse.classNumber == c[i].classNumber)
 						{
-							SelectedCourse = c[i];
+
 							course_index = i;
 						}
 					}
+					SelectedCourse = c[course_index];
+					cout << "Here's The Available Courses To Swap: " << endl;
+					for (int i = 0; i < nbOfCourses; i++) {
+						if (SelectedCourse.courseName == c[i].courseName && c[i].classNumber != SelectedCourse.classNumber) {
+							cout << c[i].courseID << ',' << c[i].classNumber << endl;
+							SelectedSwapCourse[i] = c[i];
+						
+						}
+					}
+					do {
+						cout << "Enter The Class Number Of The Course You Wish To Swap To: ";
+						cin >> swapchoice2;
 
+					
 
+						for (int i = 0; i < nbOfCourses; i++) {
+							if (swapchoice2 = SelectedSwapCourse[i].classNumber) {
+								course_index_3 = i;
+							}
+							
+							
+						}
+					course SelectedSwap = 	SelectedSwapCourse[course_index_3];
+						if (course_index_3 != -1) {
+							cout << "Are You Sure You Want To Swap These Following Courses: " << endl;
+							cout << c[course_index].classNumber << " <--> " << SelectedSwapCourse[course_index_3].classNumber;
+							cin >> addchoice1;
+							if (addchoice1 == "Yes" || addchoice1 == "yes") {
+								DropCourse(SelectedCourse, SID, foundline, nbOfCourses, c, course_index, addchoice1);
+								//EnrollCourse(SelectedSwap, nbOfCourses);
+							}
+						}
+					} while (course_index_3 == -1);
+
+					system("pause");
 				}
-				else if (choice == 4) {
-					// w b hayde l case badna naaml load la array of structure telte bi hayde l function rah nfaweta bel param
-					// li hiye rah tekhod l data men file aaks file l staamalne bel drop w swap li houwe rah yetdamman ID 
-					// l student w haddo l course name w aya nhar w aya se3a ekhdo lal course w naamel cout lal courses 
-					// bass bi tari2a naamel assorting lal courses hasab aya nhar w aya seea men Mon lal Fri men l 8 lal 8 
-					// bel ascending order 
+
+				else
+				{
+					cout << "Not Found";
 				}
+
 
 			} while (!ClassNumFound);
 
+
 		}
+		
+				else if (choice == 4) {
+			searchStudentByID(SID);
+		
+			system("pause");
+				}
+
+			
+
+		
 
 	} while (choice != 0);
 }
@@ -1329,7 +1414,15 @@ int main() {
 		else if (signIn_choice == 1) {
 			ClearScreen();
 			SignIn(Students, NbofStudents, StudentID);
-			AdminOrStudent();
+
+			if (AdminOrStudent() == 1) {
+				Admin(Courses, NbofCourses);
+			}
+			else if (AdminOrStudent() == 2) {
+				LoadCourses(Courses, NbofCourses);
+				Student(Courses, NbofCourses, StudentID);
+			}
+			
 		}
 	}
 
